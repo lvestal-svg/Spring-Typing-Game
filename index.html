@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Typing Challenge</title>
+  <style>
+    :root {
+      --bg1: #f4fff3;
+      --bg2: #e8f7ff;
+      --card: rgba(255,255,255,0.92);
+      --text: #21412f;
+      --accent: #49a96e;
+      --accent2: #5aa9e6;
+      --accent3: #f9c74f;
+      --bad: #b4235f;
+      --good: #2f9e44;
+      --shadow: 0 12px 30px rgba(0,0,0,0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fff8d6 0%, transparent 28%),
+        radial-gradient(circle at top right, #e4ffe7 0%, transparent 24%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .screen.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: min(980px, 100%);
+      background: var(--card);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      border: 3px solid rgba(255,255,255,0.7);
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+
+    .hero {
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      margin-bottom: 10px;
+      color: #2a6948;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin: 0 auto 18px;
+      max-width: 760px;
+    }
+
+    .options {
+      display: grid;
+      gap: 16px;
+      margin: 24px auto;
+      max-width: 560px;
+    }
+
+    .option-box {
+      background: #fff;
+      border: 3px solid #d8eede;
+      border-radius: 18px;
+      padding: 16px;
+      text-align: left;
+    }
+
+    .option-box label {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 2px solid #cfded3;
+      font-size: 1rem;
+      background: white;
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 14px 22px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 7px 18px rgba(0,0,0,0.08);
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+
+    .primary { background: var(--accent); color: white; }
+    .secondary { background: var(--accent2); color: white; }
+    .gold { background: var(--accent3); color: #5b4300; }
+    .ghost { background: white; color: var(--text); border: 2px solid #d6e6da; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 18px;
+      padding: 14px;
+      text-align: center;
+      border: 2px solid #e2efe6;
+    }
+
+    .stat-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      opacity: 0.8;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 900;
+      margin-top: 4px;
+    }
+
+    .progress-wrap {
+      background: #edf7ef;
+      height: 16px;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #62c87f, #5aa9e6);
+      transition: width 0.25s ease;
+    }
+
+    .prompt-box, .typing-box, .feedback-box, .legend {
+      background: white;
+      border-radius: 20px;
+      border: 2px solid #e2efe6;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .topic-line {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #45795b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .prompt-text {
+      font-size: 1.28rem;
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .green { background: #c7f3d2; }
+    .red { background: #ffd6ea; }
+    .neutral { background: #eef3f7; }
+
+    .typing-layer {
+      position: relative;
+      min-height: 190px;
+      border-radius: 16px;
+      border: 3px solid #cfe2d3;
+      overflow: hidden;
+      background: white;
+    }
+
+    .typing-backdrop,
+    .typing-overlay {
+      position: absolute;
+      inset: 0;
+      padding: 16px;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow: auto;
+      min-height: 190px;
+    }
+
+    .typing-backdrop {
+      color: #21412f;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .typing-overlay {
+      z-index: 2;
+      background: transparent;
+      color: transparent;
+      caret-color: #21412f;
+      resize: none;
+      border: none;
+      outline: none;
+    }
+
+    .typing-layer:focus-within {
+      border-color: #7bc79a;
+      box-shadow: 0 0 0 4px rgba(91, 184, 124, 0.16);
+    }
+
+    .typed-correct {
+      color: #21412f;
+      background: transparent;
+    }
+
+    .typed-wrong,
+    .typed-extra {
+      color: #7a143c;
+      background: #ffd6ea;
+      border-radius: 4px;
+    }
+
+    .typed-pending {
+      color: transparent;
+    }
+
+    .feedback-box {
+      font-weight: 800;
+      font-size: 1.04rem;
+    }
+
+    .good-text { color: var(--good); }
+    .bad-text { color: var(--bad); }
+
+    .scene {
+      position: relative;
+      height: 220px;
+      border-radius: 24px;
+      margin: 22px 0 8px;
+      overflow: hidden;
+      border: 2px solid #e2efe6;
+      background: linear-gradient(#bfe8ff, #eef9ff 70%, #b7e08a 70%, #94cc63 100%);
+    }
+
+    .sun, .cloud, .cloud2, .bird, .bird2, .butterfly, .butterfly2, .rain, .lightning {
+      position: absolute;
+    }
+
+    .sun {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #ffd54f;
+      top: 26px;
+      left: 56px;
+      box-shadow: 0 0 0 12px rgba(255,213,79,0.22);
+    }
+
+    .cloud, .cloud2 {
+      width: 110px;
+      height: 42px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 999px;
+      top: 42px;
+    }
+
+    .cloud::before, .cloud::after, .cloud2::before, .cloud2::after {
+      content: "";
+      position: absolute;
+      background: inherit;
+      border-radius: 50%;
+    }
+
+    .cloud::before, .cloud2::before { width: 42px; height: 42px; left: 16px; top: -16px; }
+    .cloud::after, .cloud2::after { width: 56px; height: 56px; left: 48px; top: -24px; }
+    .cloud { right: 72px; animation: drift 10s linear infinite; }
+    .cloud2 { left: 180px; top: 72px; animation: drift 14s linear infinite; }
+
+    .bird, .bird2 {
+      font-size: 28px;
+      animation: fly 7s linear infinite;
+    }
+
+    .bird { top: 58px; left: -40px; }
+    .bird2 { top: 92px; left: -120px; animation-delay: 2.5s; }
+
+    .butterfly, .butterfly2 {
+      font-size: 28px;
+      bottom: 48px;
+      animation: flutter 5s ease-in-out infinite;
+    }
+
+    .butterfly { left: 22%; }
+    .butterfly2 { left: 68%; animation-delay: 1.2s; }
+
+    .rain {
+      inset: 0;
+      background-image: repeating-linear-gradient(105deg, transparent 0 14px, rgba(120,150,210,0.7) 14px 16px, transparent 16px 30px);
+      opacity: 0.65;
+      animation: rainmove 0.45s linear infinite;
+    }
+
+    .lightning {
+      font-size: 48px;
+      right: 110px;
+      top: 52px;
+      animation: flash 1.5s infinite;
+    }
+
+    .scene.sunny {
+      background: linear-gradient(#93dcff, #eefbff 68%, #bfe38d 68%, #94cc63 100%);
+    }
+
+    .scene.partly {
+      background: linear-gradient(#9fd8ff, #f0f6fb 70%, #b7e08a 70%, #94cc63 100%);
+    }
+
+    .scene.storm {
+      background: linear-gradient(#667b95, #9eb0c0 70%, #7fb060 70%, #65984a 100%);
+    }
+
+    .scene.partly .sun { left: 40px; top: 32px; width: 62px; height: 62px; }
+    .scene.storm .sun, .scene.storm .bird, .scene.storm .bird2, .scene.storm .butterfly, .scene.storm .butterfly2 { display: none; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .big-stat {
+      background: white;
+      border: 2px solid #e2efe6;
+      border-radius: 22px;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .big-stat .num {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      color: #2e7d53;
+    }
+
+    .big-stat .label {
+      font-weight: 800;
+      margin-top: 8px;
+    }
+
+    .result-note {
+      background: #fffdf0;
+      border: 2px solid #f6e8a4;
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 1.04rem;
+      line-height: 1.6;
+    }
+
+    .small-note {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      opacity: 0.88;
+      line-height: 1.5;
+    }
+
+    .celebrate {
+      font-size: 1.2rem;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: 900;
+      color: #2a6948;
+    }
+
+    @keyframes drift {
+      0% { transform: translateX(0); }
+      50% { transform: translateX(18px); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes fly {
+      0% { transform: translateX(0) translateY(0); }
+      50% { transform: translateX(520px) translateY(-16px); }
+      100% { transform: translateX(1050px) translateY(4px); }
+    }
+
+    @keyframes flutter {
+      0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+      25% { transform: translateY(-12px) translateX(18px) rotate(8deg); }
+      50% { transform: translateY(4px) translateX(34px) rotate(-8deg); }
+      75% { transform: translateY(-16px) translateX(12px) rotate(6deg); }
+    }
+
+    @keyframes rainmove {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 20px; }
+    }
+
+    @keyframes flash {
+      0%, 75%, 100% { opacity: 0.2; transform: scale(1); }
+      10%, 20% { opacity: 1; transform: scale(1.08); }
+    }
+
+    @media (max-width: 860px) {
+      .topbar, .results-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card { padding: 18px; }
+      .prompt-text,
+      .typing-backdrop,
+      .typing-overlay { font-size: 1.08rem; }
+    }
+  </style>
+</head>
+<body>
+  <section id="startScreen" class="screen active">
+    <div class="card hero">
+      <h1>🌷 Spring Typing Challenge 🌈</h1>
+      <p class="subtitle">
+        Type each spring paragraph exactly as shown. Watch your commas, periods, question marks, exclamation points, and quotation marks.
+        Students earn points for careful, accurate typing.
+      </p>
+
+      <div class="options">
+        <div class="option-box">
+          <label for="modeSelect">Choose game mode:</label>
+          <select id="modeSelect">
+            <option value="timed">1 Minute Challenge</option>
+            <option value="untimed">No Timer - Accuracy Only</option>
+          </select>
+        </div>
+
+        <div class="option-box">
+          <label for="orderSelect">Choose paragraph order:</label>
+          <select id="orderSelect">
+            <option value="fixed">Keep topics in order</option>
+            <option value="shuffle">Shuffle topics</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="primary" id="startBtn">Start Game</button>
+      </div>
+
+      <p class="small-note">
+        Teacher note: Students cannot use copy and paste, drag-and-drop text, or right-click paste to get credit. They must type the text.
+      </p>
+    </div>
+  </section>
+
+  <section id="gameScreen" class="screen">
+    <div class="card">
+      <div class="topbar">
+        <div class="stat">
+          <div class="stat-label">Topic</div>
+          <div class="stat-value" id="topicCount">1 / 5</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value" id="accuracyStat">100%</div>
+        </div>
+        <
